@@ -36,11 +36,58 @@
  * reasonably feasible for  technical reasons, the Appropriate Legal Notices must
  * display the words  "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  */
+/*#header, #mass_update_table, #massupdate_form, #massupdate_header, #leftHandle, .subpanelTablist {*/
+    /*display: none;*/
+/*}*/
+
+/*.listViewPaginationTdS1, .listViewButtons, .search_form, .tablist, .utilsLink, .button, .tabForm {*/
+    /*display: none;*/
+/*}*/
+
+
+/*#header, #mass_update_table, #massupdate_form, #massupdate_header, #leftHandle, .subpanelTablist {*/
+    /*display: none;*/
+/*}*/
+/*.listViewPaginationTdS1, .listViewButtons, .search_form , .tablist, .utilsLink, .button, .tabForm{*/
+    /*display: none;*/
+/*}*/
 
 #header, #mass_update_table, #massupdate_form, #massupdate_header, #leftHandle, .subpanelTablist {
-    display: none;
+    display:none
+}
+.listViewPaginationTdS1, .listViewButtons, .search_form, .tablist,.utilsLink, .button, .tabForm{
+    display:none;
 }
 
-.listViewPaginationTdS1, .listViewButtons, .search_form, .tablist, .utilsLink, .button, .tabForm {
-    display: none;
+
+
+/*@media print {*/
+    /*!* to remove the links*!*/
+    /*a[href]:after {*/
+        /*content: none !important;*/
+    /*}*/
+
+    /*@page {*/
+        /*size: auto;*/
+        /*margin: auto;*/
+    /*}*/
+
+    /*#ygddfdiv, #create_link, td.buttons, td.paginationWrapper, h4, .yui-nav, span.glyphicon.glyphicon-th-list, .pagination, .serverstats, img, #links, a.utilsLink, footer, li.single, #copyright_data, .clickMenu, .navbar-inverse, .sidebar, .sugar_action_button {*/
+        /*display: none;*/
+    /*}*/
+/*}*/
+
+@media print {
+
+    a[href]:after
+    {
+        content: none !important;
+    }
+
+    #ygddfdiv, #create_link, td.buttons, td.paginationWrapper, h4, .yui-nav, span.glyphicon.glyphicon-th-list, .pagination, .serverstats, .sidebar, #actionMenuSidebar, #recentlyViewedSidebar, #favoritesSidebar, .sugar_action_button{
+        display: none;
+    }
+
+    .body { overflow-y: scroll; }
 }
+

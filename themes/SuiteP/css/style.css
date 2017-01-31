@@ -145,13 +145,13 @@ div.p_login #loginform .input-group input#user_name, #user_name:-webkit-autofill
 
 div.p_login #loginform .input-group input#user_name {
     background-position: 12px 9px;
-	background-repeat: no-repeat;
+    background-repeat: no-repeat;
     background-image: none, url("../../../../themes/SuiteP/images/login_bg.svg");
 }
 
 div.p_login #loginform .input-group input#user_password {
     background-position: 12px -51px;
-	background-repeat: no-repeat;
+    background-repeat: no-repeat;
     background-image: none, url("../../../../themes/SuiteP/images/login_bg.png");
 }
 
@@ -754,34 +754,35 @@ li.favoritelinks img {
     clear:both;
 }
 
-footer * {
-    box-sizing: content-box;
-}
+/*footer * {*/
+    /*box-sizing: content-box;*/
+/*}*/
 
 footer {
     bottom: 0;
     margin: 0 0 0 0;
+
     background-color: #E6E6E6;
     clear: both;
-    width: 100%;
     border: 1px solid transparent;
     border-radius: 4px;
     box-sizing: content-box;
     line-height: 48px;
 }
+
 footer.expandedSidebar {
     width: 79%;
     float: right;
 }
-footer.collapsedSidebar {
-    width: 94%;
-    float: right;
-}
+/*footer.collapsedSidebar {*/
+    /*width: 94%;*/
+    /*float: right;*/
+/*}*/
 
-.footer_left {
-    float: left;
-    width: 48%;
-}
+/*.footer_left {*/
+    /*float: left;*/
+    /*width: 48%;*/
+/*}*/
 
 a#powered_by {
     margin-left: 4%;
@@ -1121,13 +1122,13 @@ th, td {
 }
 
 slot, #lead_queries_Div td {
-      color: #534D64;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 48px;
-      text-align: left;
-      white-space: nowrap;
-      vertical-align: baseline;
+    color: #534D64;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 48px;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: baseline;
 
 }
 
@@ -1782,7 +1783,7 @@ table#mass_update_table td select {
 #actionLinkTop li.sugar_action_button,
 #actionLinkBottom li.sugar_action_button {
     min-width: 32px;.sugar_action_button>form>a
-    padding: 11px 10px 12px 10px;
+padding: 11px 10px 12px 10px;
 }
 
 #select_actions_disabled_top,
@@ -6279,8 +6280,8 @@ div.search_fields_basic .dateTimeRangeChoice, div.search_fields_basic .dateTimeR
         margin: 0 8px 0 42px;
     }
     #wizform #wizard {
-            width: 700px;
-        }
+        width: 700px;
+    }
 }
 
 /*md-col-*/
@@ -7002,7 +7003,7 @@ li.recentlinks_topedit a:focus {
 }
 
 li.recentlinks, li.favoritelinks {
-   display: block;
+    display: block;
 }
 
 a[id^=grouptab], a[id^=moduleTab] {
@@ -7075,10 +7076,20 @@ a[id^=grouptab]:visited, a[id^=grouptab]:active {
 }
 
 .serverstats {
-    margin: 0;
+    margin: 0 0 0 5px;
     padding: 0;
-    width: 250px !important;
+    width: 550px !important;
     float: left;
+}
+
+#links {
+    float:right;
+    margin: 0 5px 0 0;
+}
+
+#links.style {
+float:right;
+    margin: 0 5px 0 0;
 }
 
 .dashboardTabList li a span {
@@ -9819,10 +9830,84 @@ div.list-view-rounded-corners > table th:last-of-type {
 
 
     @media print {
-        .navbar-inverse, .sidebar {
+
+
+        /*aside#sidebar,#subpanel_list,header,#comments,#respond*/
+        aside #comments, .sidebar, #actionMenuSidebar, #recentlyViewedSidebar, #favoritesSidebar,  .buttons, header, #button-toggle-expanded, #buttontoggle, #respond {
             display: none;
         }
+
+        .pageContainer {
+            display: inline;
+        }
+
+        div.tab-content{
+            background-color: transparent;
+            margin:0%;
+            margin-top: 0.5cm;
+            page-break-after: always;
+        }
+
+        .pageContainer
+        {
+            size: auto;
+            margin:1%;
+            margin-top: 1cm;
+        }
+
+        /* print page size*/
+        @page{
+
+            margin: 0.1cm;
+            display: flex;
+        }
+
+
+        /** { background: transparent !important; color: black !important; text-shadow: none !important; filter:none !important; -ms-filter: none !important; }*/
+
+        body, h1, h2, h3, ol, ul, div { border: 0; margin: 0.1%; padding: 0; float: none; position: static; overflow-y: visible; }
+
+
+
+        @page :left{
+            margin: 0.5cm;
+        }
+
+        @page :right{
+            margin: 0.8cm;
+        }
+
+        body {
+            margin: 0mm;
+            font: 12pt Georgia, "Times New Roman", Times, serif;
+            line-height: 1.3;
+        }
+
+        aside {
+            border-top: 1px solid #bbb;
+            margin-top: 30px;
+            display: block;
+        }
+
+
+        /*Remove the links*/
+        a[href]:after
+        {
+            content: none !important;
+        }
+
     }
+
+
+
+
+
+
+
+
+
+
+
     /* TipTip CSS - Version 1.2 */
 
     #tiptip_holder {
@@ -11086,8 +11171,8 @@ div#content div#pagecontent form#MassUpdate table.list.view tbody tr.pagination 
 /* list items */
 
 div#content div#pagecontent form#MassUpdate table.list.view tbody tr td {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 /* edit form */

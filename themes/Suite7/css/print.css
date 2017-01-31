@@ -36,9 +36,27 @@
  * display the words  "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  ********************************************************************************/
 
-#header, #mass_update_table, #massupdate_form, #massupdate_header, #leftHandle, .subpanelTablist {
-    display: none;
-}
-.listViewPaginationTdS1, .listViewButtons, .search_form , .tablist, .utilsLink, .button, .tabForm{
-    display: none;
+/*#header, #mass_update_table, #massupdate_form, #massupdate_header, #leftHandle, .subpanelTablist {*/
+    /*display: none;*/
+/*}*/
+
+/*.listViewPaginationTdS1, .listViewButtons, .search_form , .tablist, .utilsLink, .button, .tabForm{*/
+    /*display: none;*/
+/*}*/
+
+
+@media print {
+    /* to remove the links */
+    a[href]:after {
+        content: none !important;
+    }
+    .page {
+        border: initial;
+        border-radius: initial;
+        width: initial;
+        min-height: initial;
+        box-shadow: initial;
+        background: initial;
+        page-break-after: always;
+    }
 }

@@ -45,6 +45,12 @@
 {if $AUTHENTICATED}
     <!-- Start generic footer -->
     <footer>
+        <div class="serverstats">
+            <span class="glyphicon glyphicon-globe"></span> {$STATISTICS}
+        </div>
+        <div id="links">
+            {$BOTTOMLINKS}
+        </div>
         <div id="copyright_data">
             <div id="dialog2" title="{$MOD.LBL_SUITE_SUPERCHARGED}">
                 <p>{$MOD.LBL_SUITE_DESC1}</p>
@@ -57,28 +63,61 @@
             <div id="dialog" title="&copy; {$MOD.LBL_SUITE_POWERED_BY}">
                 <p>{$COPYRIGHT}</p>
             </div>
-            <div id="copyrightbuttons" class="footer_left">
+            <div id="copyrightbuttons">
                 <a id="admin_options">&copy; {$MOD.LBL_SUITE_SUPERCHARGED}</a>
-                <a id="powered_by">&copy; {$MOD.LBL_SUITE_POWERED_BY}</a>
+                <a id="powered_by" >&copy; {$MOD.LBL_SUITE_POWERED_BY}</a>
             </div>
         </div>
-    	<div class="footer_right">
-    		
-    		<a onclick="SUGAR.util.top();" href="javascript:void(0)">{$MOD.LBL_SUITE_TOP}</a>
-    	</div>
     </footer>
+    
     <!-- END Generic Footer -->
+{*// new footer  24/11/2016*}
+
+
+ {*fotter left,center, and right*}
+
+   {*<footer>*}
+
+        {*<did id="footer_left">*}
+            {*<span class="glyphicon glyphicon-globe"></span>*}
+            {*{$STATISTICS}*}
+        {*</did>*}
+        {*<div id=footer_center>*}
+
+            {*<div id="dialog2" title="{$MOD.LBL_SUITE_SUPERCHARGED}">*}
+                {*<p>{$MOD.LBL_SUITE_DESC1}</p>*}
+                {*<br>*}
+                {*<p>{$MOD.LBL_SUITE_DESC2}</p>*}
+                {*<br>*}
+                {*<p>{$MOD.LBL_SUITE_DESC3}</p>*}
+                {*<br>*}
+            {*</div>*}
+            {*<div id="dialog" title="&copy; {$MOD.LBL_SUITE_POWERED_BY}">*}
+                {*<p>{$COPYRIGHT}</p>*}
+            {*</div>*}
+            {*<div id="copyrightbuttons">*}
+                {*<a id="admin_options">&copy; {$MOD.LBL_SUITE_SUPERCHARGED}</a>*}
+                {*<a id="powered_by" >&copy; {$MOD.LBL_SUITE_POWERED_BY}</a>*}
+            {*</div>*}
+        {*</div>*}
+
+        {*<div id="footer_right">*}
+            {*{$BOTTOMLINKS}*}
+        {*</div>*}
+    {*</footer>*}
+
+
 {/if}
 <!-- END Footer Section -->
 {literal}
-    <script>
+<script>
 
-        //qe_init function sets listeners to click event on elements of 'quickEdit' class
-        if (typeof(DCMenu) != 'undefined') {
-            DCMenu.qe_refresh = false;
-            DCMenu.qe_handle;
-        }
-        function qe_init() {
+//qe_init function sets listeners to click event on elements of 'quickEdit' class
+ if(typeof(DCMenu) !='undefined'){
+     DCMenu.qe_refresh = false;
+     DCMenu.qe_handle;
+ }
+function qe_init() {
 
             //do not process if YUI is undefined
             if (typeof(YUI) == 'undefined' || typeof(DCMenu) == 'undefined') {
@@ -121,35 +160,31 @@
         if (SUGAR.ajaxUI)
             YAHOO.util.Event.onContentReady('ajaxUI-history-field', SUGAR.ajaxUI.firstLoad);
 
-
-
-
-        $(function(){
-
-            // fix for campaign wizard
-            if($('#wizard').length) {
-
-                // footer fix
-                var bodyHeight = $('body').height();
-                var contentHeight = $('#pagecontent').height() + $('#wizard').height();
-                var fieldsetHeight = $('#pagecontent').height() + $('#wizard fieldset').height();
-                var height = bodyHeight < contentHeight ? contentHeight : bodyHeight;
-                if(fieldsetHeight > height) {
-                    height = fieldsetHeight;
-                }
-                height += 50;
-                $('#content').css({
-                    'min-height': height + 'px'
-                });
-
-                // uploader fix
-                $('#step1_uploader').css({
-                    position: 'relative',
-                    top: ($('#wizard').height() - 90) + 'px'
-                });
-            }
-        });
-
+//$(function(){
+//
+//    // fix for campaign wizard
+//    if($('#wizard').length) {
+//
+//        // footer fix
+//        var bodyHeight = $('body').height();
+//        var contentHeight = $('#pagecontent').height() + $('#wizard').height();
+//        var fieldsetHeight = $('#pagecontent').height() + $('#wizard fieldset').height();
+//        var height = bodyHeight < contentHeight ? contentHeight : bodyHeight;
+//        if(fieldsetHeight > height) {
+//            height = fieldsetHeight;
+//        }
+//        height += 50;
+//        $('#content').css({
+//            'min-height': height + 'px'
+//        });
+//
+//        // uploader fix
+//        $('#step1_uploader').css({
+//            position: 'relative',
+//            top: ($('#wizard').height() - 90) + 'px'
+//        });
+//    }
+//});
     </script>
 {/literal}
 </div>

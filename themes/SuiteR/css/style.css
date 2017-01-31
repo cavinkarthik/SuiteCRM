@@ -2907,6 +2907,20 @@ input[type=text].cstm_code {
     color:#428BCA;
 }
 
+/* Media Print*/
+@media print {
+    aside#sidebar,#subpanel_list,header,#comments,#respond {
+        display: none;
+    }
+    @page{
+        margin:1%;
+        margin-top: 1cm;
+    }
+    a[href]:after
+    {
+        content: none !important;
+    }
+}
 @media (min-width:768px) and (max-width:979px) {
     #bs-example-navbar-collapse-1 {
         display:none!important;
@@ -5070,11 +5084,11 @@ td.inlineEditActive{
 
 /* Fix to ensure navigation elements are not included in print process */
 
-@media print {
-    .navbar-inverse, .sidebar{
-        display: none;
-    }
-}
+/*@media print {*/
+    /*.navbar-inverse, .sidebar{*/
+        /*display: none;*/
+    /*}*/
+/*}*/
 
 object{
     pointer-events: none;
