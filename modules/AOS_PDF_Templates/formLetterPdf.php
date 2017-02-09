@@ -37,15 +37,21 @@
  * reasonably feasible for  technical reasons, the Appropriate Legal Notices must
  * display the words  "Powered by SugarCRM" and "Supercharged by SuiteCRM".
  */
+//require_once('modules/AOS_PDF_Templates/mpdf/mpdf.php');
 
-require_once('modules/AOS_PDF_Templates/PDF_Lib/mpdf.php');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once __DIR__ . '../../../vendor/autoload.php';
+//require_once __DIR__ . '/vendor/autoload.php';
+require_once('vendor/mpdf/mpdf/mpdf.php');
 require_once('modules/AOS_PDF_Templates/templateParser.php');
 require_once('modules/AOS_PDF_Templates/AOS_PDF_Templates.php');
 
+
+
 global $sugar_config, $current_user;
-
 $bean = BeanFactory::getBean($_REQUEST['module']);
-
 if(!$bean){
     sugar_die("Invalid Module");
 }
@@ -71,17 +77,19 @@ if (isset($_REQUEST['current_post']) && $_REQUEST['current_post'] != '') {
 
 $template = BeanFactory::getBean('AOS_PDF_Templates',$_REQUEST['templateID']);
 
+
+
 if(!$template){
     sugar_die("Invalid Template");
 }
 
 $file_name = str_replace(" ", "_", $template->name) . ".pdf";
 
-$pdf = new mPDF('en', 'A4', '', 'DejaVuSansCondensed', $template->margin_left, $template->margin_right, $template->margin_top, $template->margin_bottom, $template->margin_header, $template->margin_footer);
+$mpdf = new mPDF('en', 'A4', '', 'DejaVuSansCondensed', $template->margin_left, $template->margin_right, $template->margin_top, $template->margin_bottom, $template->margin_header, $template->margin_footer);
 
 foreach ($recordIds as $recordId) {
     $bean->retrieve($recordId);
-    $pdf_history = new mPDF('en', 'A4', '', 'DejaVuSansCondensed', $template->margin_left, $template->margin_right, $template->margin_top, $template->margin_bottom, $template->margin_header, $template->margin_footer);
+    $mpdf_history = new mPDF('en', 'A4', '', 'DejaVuSansCondensed', $template->margin_left, $template->margin_right, $template->margin_top, $template->margin_bottom, $template->margin_header, $template->margin_footer);
 
     $object_arr = array();
     $object_arr[$bean->module_dir] = $bean->id;
@@ -149,23 +157,28 @@ foreach ($recordIds as $recordId) {
         $fp = fopen($sugar_config['upload_dir'] . 'nfile.pdf', 'wb');
         fclose($fp);
 
-        $pdf_history->SetAutoFont();
-        $pdf_history->SetHTMLHeader($header);
-        $pdf_history->SetHTMLFooter($footer);
-        $pdf_history->WriteHTML($printable);
-        $pdf_history->Output($sugar_config['upload_dir'] . 'nfile.pdf', 'F');
+//        $mpdf_history->autoScriptToLang();
+        $mpdf_history->SetHTMLHeader($header);
+        $mpdf_history->SetHTMLFooter($footer);
+        $mpdf_history->WriteHTML($printable);
+        $mpdf_history->Output($sugar_config['upload_dir'] . 'nfile.pdf', 'F');
 
-        $pdf->AddPage();
-        $pdf->SetAutoFont();
-        $pdf->SetHTMLHeader($header);
-        $pdf->SetHTMLFooter($footer);
-        $pdf->WriteHTML($printable);
+
+
+        $mpdf->AddPage();
+        //$mpdf->autoScriptToLang();
+        $mpdf->SetHTMLHeader($header);
+        $mpdf->SetHTMLFooter($footer);
+        $mpdf->WriteHTML($printable);
+
+
 
         rename($sugar_config['upload_dir'] . 'nfile.pdf', $sugar_config['upload_dir'] . $note->id);
 
     } catch (mPDF_exception $e) {
         echo $e;
+
     }
 }
 
-$pdf->Output($file_name, "D");
+$mpdf->Output($file_name, "D");

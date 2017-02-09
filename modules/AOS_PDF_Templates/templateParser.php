@@ -24,6 +24,8 @@
  *
  * @author Salesagility Ltd <support@salesagility.com>
  */
+include 'generatePdf.php';
+
 class templateParser
 {
     static function parse_template($string, $bean_arr)

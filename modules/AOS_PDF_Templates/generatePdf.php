@@ -41,11 +41,21 @@
 if (!isset($_REQUEST['uid']) || empty($_REQUEST['uid']) || !isset($_REQUEST['templateID']) || empty($_REQUEST['templateID'])) {
     die('Error retrieving record. This record may be deleted or you may not be authorized to view it.');
 }
-error_reporting(0);
-require_once('modules/AOS_PDF_Templates/PDF_Lib/mpdf.php');
+
+
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+
+
+require_once __DIR__ . '../../../vendor/autoload.php';
+require_once('vendor/mpdf/mpdf/mpdf.php');
 require_once('modules/AOS_PDF_Templates/templateParser.php');
 require_once('modules/AOS_PDF_Templates/sendEmail.php');
 require_once('modules/AOS_PDF_Templates/AOS_PDF_Templates.php');
+
+
 
 global $mod_strings, $sugar_config;
 
@@ -65,6 +75,7 @@ $res = $bean->db->query($sql);
 while ($row = $bean->db->fetchByAssoc($res)) {
     $lineItemsGroups[$row['group_id']][$row['id']] = $row['product_id'];
     $lineItems[$row['id']] = $row['product_id'];
+
 
 }
 
@@ -109,6 +120,8 @@ $replace = array('',
     'chr(%1)'
 );
 
+
+
 $header = preg_replace($search, $replace, $template->pdfheader);
 $footer = preg_replace($search, $replace, $template->pdffooter);
 $text = preg_replace($search, $replace, $template->description);
@@ -127,7 +140,7 @@ $text = str_replace("\$tax_amount", "\$" . $variableName . "_tax_amount", $text)
 $text = str_replace("\$shipping_amount", "\$" . $variableName . "_shipping_amount", $text);
 $text = str_replace("\$total_amount", "\$" . $variableName . "_total_amount", $text);
 
-$text = populate_group_lines($text, $lineItemsGroups, $lineItems);
+$text = new populate_group_lines($text, $lineItemsGroups, $lineItems);
 
 $converted = templateParser::parse_template($text, $object_arr);
 $header = templateParser::parse_template($header, $object_arr);
@@ -139,22 +152,24 @@ if ($task == 'pdf' || $task == 'emailpdf') {
     $file_name = $mod_strings['LBL_PDF_NAME'] . "_" . str_replace(" ", "_", $bean->name) . ".pdf";
 
     ob_clean();
+
     try {
-        $pdf = new mPDF('en', 'A4', '', 'DejaVuSansCondensed', $template->margin_left, $template->margin_right, $template->margin_top, $template->margin_bottom, $template->margin_header, $template->margin_footer);
-        $pdf->SetAutoFont();
-        $pdf->SetHTMLHeader($header);
-        $pdf->SetHTMLFooter($footer);
-        $pdf->WriteHTML($printable);
+        $mpdf = new mPDF('en', 'A4', '', 'DejaVuSansCondensed', $template->margin_left, $template->margin_right, $template->margin_top, $template->margin_bottom, $template->margin_header, $template->margin_footer);
+        $mpdf->debug = true;
+        $mpdf->SetHTMLHeader($header);
+        $mpdf->SetHTMLFooter($footer);
+        $mpdf->WriteHTML($printable);
         if ($task == 'pdf') {
-            $pdf->Output($file_name, "D");
+            $mpdf->Output($file_name, "D");
         } else {
             $fp = fopen($sugar_config['upload_dir'] . 'attachfile.pdf', 'wb');
             fclose($fp);
-            $pdf->Output($sugar_config['upload_dir'] . 'attachfile.pdf', 'F');
+            $mpdf->Output($sugar_config['upload_dir'] . 'attachfile.pdf', 'F');
             $sendEmail = new sendEmail();
             $sendEmail->send_email($bean, $bean->module_dir, '', $file_name, true);
         }
-    } catch (mPDF_exception $e) {
+    } catch (mPDF_exception $e)
+    {
         echo $e;
     }
 } elseif ($task == 'email') {
@@ -162,268 +177,286 @@ if ($task == 'pdf' || $task == 'emailpdf') {
     $sendEmail->send_email($bean, $bean->module_dir, $printable, '', false);
 }
 
+class onepoi {
 
-function populate_group_lines($text, $lineItemsGroups, $lineItems, $element = 'table')
-{
+    public function populate_group_lines($text, $lineItemsGroups, $lineItems, $element = 'table')
+    {
 
-    $firstValue = '';
-    $firstNum = 0;
+        $firstValue = '';
+        $firstNum = 0;
+        $lastValue = '';
+        $lastNum = 0;
+        $startElement = '<' . $element;
+        $endElement = '</' . $element . '>';
+        $groups = new AOS_Line_Item_Groups();
+        foreach ($groups->field_defs as $name => $arr) {
+            if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
 
-    $lastValue = '';
-    $lastNum = 0;
-
-    $startElement = '<' . $element;
-    $endElement = '</' . $element . '>';
-
-
-    $groups = new AOS_Line_Item_Groups();
-    foreach ($groups->field_defs as $name => $arr) {
-        if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
-
-            $curNum = strpos($text, '$aos_line_item_groups_' . $name);
-            if ($curNum) {
-                if ($curNum < $firstNum || $firstNum == 0) {
-                    $firstValue = '$aos_line_item_groups_' . $name;
-                    $firstNum = $curNum;
-                }
-                if ($curNum > $lastNum) {
-                    $lastValue = '$aos_line_item_groups_' . $name;
-                    $lastNum = $curNum;
+                $curNum = strpos($text, '$aos_line_item_groups_' . $name);
+                if ($curNum) {
+                    if ($curNum < $firstNum || $firstNum == 0) {
+                        $firstValue = '$aos_line_item_groups_' . $name;
+                        $firstNum = $curNum;
+                    }
+                    if ($curNum > $lastNum) {
+                        $lastValue = '$aos_line_item_groups_' . $name;
+                        $lastNum = $curNum;
+                    }
                 }
             }
         }
-    }
-    if ($firstValue !== '' && $lastValue !== '') {
-        //Converting Text
-        $parts = explode($firstValue, $text);
-        $text = $parts[0];
-        $parts = explode($lastValue, $parts[1]);
-        if ($lastValue == $firstValue) {
-            $groupPart = $firstValue . $parts[0];
-        } else {
-            $groupPart = $firstValue . $parts[0] . $lastValue;
-        }
 
-        if (count($lineItemsGroups) != 0) {
-            //Read line start <tr> value
-            $tcount = strrpos($text, $startElement);
-            $lsValue = substr($text, $tcount);
-            $tcount = strpos($lsValue, ">") + 1;
-            $lsValue = substr($lsValue, 0, $tcount);
-
-
-            //Read line end values
-            $tcount = strpos($parts[1], $endElement) + strlen($endElement);
-            $leValue = substr($parts[1], 0, $tcount);
-
-            //Converting Line Items
-            $obb = array();
-
-            $tdTemp = explode($lsValue, $text);
-
-            $groupPart = $lsValue . $tdTemp[count($tdTemp) - 1] . $groupPart . $leValue;
-
-            $text = $tdTemp[0];
-
-            foreach ($lineItemsGroups as $group_id => $lineItemsArray) {
-                $groupPartTemp = populate_product_lines($groupPart, $lineItemsArray);
-                $groupPartTemp = populate_service_lines($groupPartTemp, $lineItemsArray);
-
-                $obb['AOS_Line_Item_Groups'] = $group_id;
-                $text .= templateParser::parse_template($groupPartTemp, $obb);
-                $text .= '<br />';
+        if ($firstValue !== '' && $lastValue !== '') {
+            //Converting Text
+            $parts = explode($firstValue, $text);
+            $text = $parts[0];
+            $parts = explode($lastValue, $parts[1]);
+            if ($lastValue == $firstValue) {
+                $groupPart = $firstValue . $parts[0];
+            } else {
+                $groupPart = $firstValue . $parts[0] . $lastValue;
             }
-            $tcount = strpos($parts[1], $endElement) + strlen($endElement);
-            $parts[1] = substr($parts[1], $tcount);
-        } else {
-            $tcount = strrpos($text, $startElement);
-            $text = substr($text, 0, $tcount);
 
-            $tcount = strpos($parts[1], $endElement) + strlen($endElement);
-            $parts[1] = substr($parts[1], $tcount);
+            if (count($lineItemsGroups) != 0) {
+                //Read line start <tr> value
+                $tcount = strrpos($text, $startElement);
+                $lsValue = substr($text, $tcount);
+                $tcount = strpos($lsValue, ">") + 1;
+                $lsValue = substr($lsValue, 0, $tcount);
+
+
+                //Read line end values
+                $tcount = strpos($parts[1], $endElement) + strlen($endElement);
+                $leValue = substr($parts[1], 0, $tcount);
+
+                //Converting Line Items
+                $obb = array();
+
+                $tdTemp = explode($lsValue, $text);
+
+                $groupPart = $lsValue . $tdTemp[count($tdTemp) - 1] . $groupPart . $leValue;
+
+                $text = $tdTemp[0];
+
+                foreach ($lineItemsGroups as $group_id => $lineItemsArray) {
+                    $groupPartTemp = populate_product_lines($groupPart, $lineItemsArray);
+                    $groupPartTemp = populate_service_lines($groupPartTemp, $lineItemsArray);
+
+                    $obb['AOS_Line_Item_Groups'] = $group_id;
+                    $text .= templateParser::parse_template($groupPartTemp, $obb);
+                    $text .= '<br />';
+                }
+                $tcount = strpos($parts[1], $endElement) + strlen($endElement);
+                $parts[1] = substr($parts[1], $tcount);
+            } else {
+                $tcount = strrpos($text, $startElement);
+                $text = substr($text, 0, $tcount);
+
+                $tcount = strpos($parts[1], $endElement) + strlen($endElement);
+                $parts[1] = substr($parts[1], $tcount);
+            }
+
+            $text .= $parts[1];
+        } else {
+            $text = populate_product_lines($text, $lineItems);
+            $text = populate_service_lines($text, $lineItems);
         }
 
-        $text .= $parts[1];
-    } else {
-        $text = populate_product_lines($text, $lineItems);
-        $text = populate_service_lines($text, $lineItems);
+
+        return $text;
+
     }
 
-
-    return $text;
 
 }
+//
+//class two{
+//
+//
+//
+//    function populate_product_lines($text, $lineItems, $element = 'tr')
+//    {
+//        $firstValue = '';
+//        $firstNum = 0;
+//
+//        $lastValue = '';
+//        $lastNum = 0;
+//
+//        $startElement = '<' . $element;
+//        $endElement = '</' . $element . '>';
+//
+//        //Find first and last valid line values
+//        $product_quote = new AOS_Products_Quotes();
+//        foreach ($product_quote->field_defs as $name => $arr) {
+//            if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
+//
+//                $curNum = strpos($text, '$aos_products_quotes_' . $name);
+//
+//                if ($curNum) {
+//                    if ($curNum < $firstNum || $firstNum == 0) {
+//                        $firstValue = '$aos_products_quotes_' . $name;
+//                        $firstNum = $curNum;
+//
+//                    }
+//                    if ($curNum > $lastNum) {
+//                        $lastValue = '$aos_products_quotes_' . $name;
+//                        $lastNum = $curNum;
+//
+//                    }
+//                }
+//            }
+//        }
+//
+//        $product = new AOS_Products();
+//        foreach ($product->field_defs as $name => $arr) {
+//            if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
+//
+//                $curNum = strpos($text, '$aos_products_' . $name);
+//                if ($curNum) {
+//                    if ($curNum < $firstNum || $firstNum == 0) {
+//                        $firstValue = '$aos_products_' . $name;
+//
+//
+//                        $firstNum = $curNum;
+//                    }
+//                    if ($curNum > $lastNum) {
+//                        $lastValue = '$aos_products_' . $name;
+//                        $lastNum = $curNum;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if ($firstValue !== '' && $lastValue !== '') {
+//
+//            //Converting Text
+//            $tparts = explode($firstValue, $text);
+//            $temp = $tparts[0];
+//
+//            //check if there is only one line item
+//            if ($firstNum == $lastNum) {
+//                $linePart = $firstValue;
+//            } else {
+//                $tparts = explode($lastValue, $tparts[1]);
+//                $linePart = $firstValue . $tparts[0] . $lastValue;
+//            }
+//
+//
+//            $tcount = strrpos($temp, $startElement);
+//            $lsValue = substr($temp, $tcount);
+//            $tcount = strpos($lsValue, ">") + 1;
+//            $lsValue = substr($lsValue, 0, $tcount);
+//
+//            //Read line end values
+//            $tcount = strpos($tparts[1], $endElement) + strlen($endElement);
+//            $leValue = substr($tparts[1], 0, $tcount);
+//            $tdTemp = explode($lsValue, $temp);
+//
+//            $linePart = $lsValue . $tdTemp[count($tdTemp) - 1] . $linePart . $leValue;
+//            $parts = explode($linePart, $text);
+//            $text = $parts[0];
+//
+//            //Converting Line Items
+//            if (count($lineItems) != 0) {
+//                foreach ($lineItems as $id => $productId) {
+//                    if ($productId != null && $productId != '0') {
+//                        $obb['AOS_Products_Quotes'] = $id;
+//                        $obb['AOS_Products'] = $productId;
+//                        $text .= templateParser::parse_template($linePart, $obb);
+//                    }
+//                }
+//            }
+//
+//            $text .= $parts[1];
+//        }
+//        return $text;
+//    }
+//
+//
+//}
+//
+//
+//class three{
+//
+//    function populate_service_lines($text, $lineItems, $element = 'tr')
+//    {
+//        $firstValue = '';
+//        $firstNum = 0;
+//
+//        $lastValue = '';
+//        $lastNum = 0;
+//
+//        $startElement = '<' . $element;
+//        $endElement = '</' . $element . '>';
+//
+//        $text = str_replace("\$aos_services_quotes_service", "\$aos_services_quotes_product", $text);
+//
+//        //Find first and last valid line values
+//        $product_quote = new AOS_Products_Quotes();
+//        foreach ($product_quote->field_defs as $name => $arr) {
+//            if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
+//
+//                $curNum = strpos($text, '$aos_services_quotes_' . $name);
+//                if ($curNum) {
+//                    if ($curNum < $firstNum || $firstNum == 0) {
+//                        $firstValue = '$aos_products_quotes_' . $name;
+//                        $firstNum = $curNum;
+//                    }
+//                    if ($curNum > $lastNum) {
+//                        $lastValue = '$aos_products_quotes_' . $name;
+//                        $lastNum = $curNum;
+//                    }
+//                }
+//            }
+//        }
+//        if ($firstValue !== '' && $lastValue !== '') {
+//            $text = str_replace("\$aos_products", "\$aos_null", $text);
+//            $text = str_replace("\$aos_services", "\$aos_products", $text);
+//
+//            //Converting Text
+//            $tparts = explode($firstValue, $text);
+//            $temp = $tparts[0];
+//
+//            //check if there is only one line item
+//            if ($firstNum == $lastNum) {
+//                $linePart = $firstValue;
+//            } else {
+//                $tparts = explode($lastValue, $tparts[1]);
+//                $linePart = $firstValue . $tparts[0] . $lastValue;
+//            }
+//
+//            $tcount = strrpos($temp, $startElement);
+//            $lsValue = substr($temp, $tcount);
+//            $tcount = strpos($lsValue, ">") + 1;
+//            $lsValue = substr($lsValue, 0, $tcount);
+//
+//            //Read line end values
+//            $tcount = strpos($tparts[1], $endElement) + strlen($endElement);
+//            $leValue = substr($tparts[1], 0, $tcount);
+//            $tdTemp = explode($lsValue, $temp);
+//
+//            $linePart = $lsValue . $tdTemp[count($tdTemp) - 1] . $linePart . $leValue;
+//            $parts = explode($linePart, $text);
+//            $text = $parts[0];
+//
+//            //Converting Line Items
+//            if (count($lineItems) != 0) {
+//                foreach ($lineItems as $id => $productId) {
+//                    if ($productId == null || $productId == '0') {
+//                        $obb['AOS_Products_Quotes'] = $id;
+//                        $text .= templateParser::parse_template($linePart, $obb);
+//                    }
+//                }
+//            }
+//
+//            $text .= $parts[1];
+//        }
+//        return $text;
+//    }
+//
+//}
 
-function populate_product_lines($text, $lineItems, $element = 'tr')
-{
-    $firstValue = '';
-    $firstNum = 0;
-
-    $lastValue = '';
-    $lastNum = 0;
-
-    $startElement = '<' . $element;
-    $endElement = '</' . $element . '>';
-
-    //Find first and last valid line values
-    $product_quote = new AOS_Products_Quotes();
-    foreach ($product_quote->field_defs as $name => $arr) {
-        if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
-
-            $curNum = strpos($text, '$aos_products_quotes_' . $name);
-
-            if ($curNum) {
-                if ($curNum < $firstNum || $firstNum == 0) {
-                    $firstValue = '$aos_products_quotes_' . $name;
-                    $firstNum = $curNum;
-
-                }
-                if ($curNum > $lastNum) {
-                    $lastValue = '$aos_products_quotes_' . $name;
-                    $lastNum = $curNum;
-
-                }
-            }
-        }
-    }
-
-    $product = new AOS_Products();
-    foreach ($product->field_defs as $name => $arr) {
-        if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
-
-            $curNum = strpos($text, '$aos_products_' . $name);
-            if ($curNum) {
-                if ($curNum < $firstNum || $firstNum == 0) {
-                    $firstValue = '$aos_products_' . $name;
 
 
-                    $firstNum = $curNum;
-                }
-                if ($curNum > $lastNum) {
-                    $lastValue = '$aos_products_' . $name;
-                    $lastNum = $curNum;
-                }
-            }
-        }
-    }
-
-    if ($firstValue !== '' && $lastValue !== '') {
-
-        //Converting Text
-        $tparts = explode($firstValue, $text);
-        $temp = $tparts[0];
-
-        //check if there is only one line item
-        if ($firstNum == $lastNum) {
-            $linePart = $firstValue;
-        } else {
-            $tparts = explode($lastValue, $tparts[1]);
-            $linePart = $firstValue . $tparts[0] . $lastValue;
-        }
 
 
-        $tcount = strrpos($temp, $startElement);
-        $lsValue = substr($temp, $tcount);
-        $tcount = strpos($lsValue, ">") + 1;
-        $lsValue = substr($lsValue, 0, $tcount);
-
-        //Read line end values
-        $tcount = strpos($tparts[1], $endElement) + strlen($endElement);
-        $leValue = substr($tparts[1], 0, $tcount);
-        $tdTemp = explode($lsValue, $temp);
-
-        $linePart = $lsValue . $tdTemp[count($tdTemp) - 1] . $linePart . $leValue;
-        $parts = explode($linePart, $text);
-        $text = $parts[0];
-
-        //Converting Line Items
-        if (count($lineItems) != 0) {
-            foreach ($lineItems as $id => $productId) {
-                if ($productId != null && $productId != '0') {
-                    $obb['AOS_Products_Quotes'] = $id;
-                    $obb['AOS_Products'] = $productId;
-                    $text .= templateParser::parse_template($linePart, $obb);
-                }
-            }
-        }
-
-        $text .= $parts[1];
-    }
-    return $text;
-}
-
-function populate_service_lines($text, $lineItems, $element = 'tr')
-{
-    $firstValue = '';
-    $firstNum = 0;
-
-    $lastValue = '';
-    $lastNum = 0;
-
-    $startElement = '<' . $element;
-    $endElement = '</' . $element . '>';
-
-    $text = str_replace("\$aos_services_quotes_service", "\$aos_services_quotes_product", $text);
-
-    //Find first and last valid line values
-    $product_quote = new AOS_Products_Quotes();
-    foreach ($product_quote->field_defs as $name => $arr) {
-        if (!((isset($arr['dbType']) && strtolower($arr['dbType']) == 'id') || $arr['type'] == 'id' || $arr['type'] == 'link')) {
-
-            $curNum = strpos($text, '$aos_services_quotes_' . $name);
-            if ($curNum) {
-                if ($curNum < $firstNum || $firstNum == 0) {
-                    $firstValue = '$aos_products_quotes_' . $name;
-                    $firstNum = $curNum;
-                }
-                if ($curNum > $lastNum) {
-                    $lastValue = '$aos_products_quotes_' . $name;
-                    $lastNum = $curNum;
-                }
-            }
-        }
-    }
-    if ($firstValue !== '' && $lastValue !== '') {
-        $text = str_replace("\$aos_products", "\$aos_null", $text);
-        $text = str_replace("\$aos_services", "\$aos_products", $text);
-
-        //Converting Text
-        $tparts = explode($firstValue, $text);
-        $temp = $tparts[0];
-
-        //check if there is only one line item
-        if ($firstNum == $lastNum) {
-            $linePart = $firstValue;
-        } else {
-            $tparts = explode($lastValue, $tparts[1]);
-            $linePart = $firstValue . $tparts[0] . $lastValue;
-        }
-
-        $tcount = strrpos($temp, $startElement);
-        $lsValue = substr($temp, $tcount);
-        $tcount = strpos($lsValue, ">") + 1;
-        $lsValue = substr($lsValue, 0, $tcount);
-
-        //Read line end values
-        $tcount = strpos($tparts[1], $endElement) + strlen($endElement);
-        $leValue = substr($tparts[1], 0, $tcount);
-        $tdTemp = explode($lsValue, $temp);
-
-        $linePart = $lsValue . $tdTemp[count($tdTemp) - 1] . $linePart . $leValue;
-        $parts = explode($linePart, $text);
-        $text = $parts[0];
-
-        //Converting Line Items
-        if (count($lineItems) != 0) {
-            foreach ($lineItems as $id => $productId) {
-                if ($productId == null || $productId == '0') {
-                    $obb['AOS_Products_Quotes'] = $id;
-                    $text .= templateParser::parse_template($linePart, $obb);
-                }
-            }
-        }
-
-        $text .= $parts[1];
-    }
-    return $text;
-}

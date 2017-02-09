@@ -37,6 +37,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  ********************************************************************************/
 
 require_once('include/MVC/View/views/view.detail.php');
+//require_once('modules/AOS_PDF_Templates/formLetter.php');
+
+
 
 class AccountsViewDetail extends ViewDetail {
 

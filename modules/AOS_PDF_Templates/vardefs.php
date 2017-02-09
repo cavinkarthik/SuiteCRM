@@ -268,6 +268,55 @@ $dictionary['AOS_PDF_Templates'] = array(
     'enable_range_search' => false,
     'disable_num_format' => '',
   ),
+
+//  //page Size 03/02/2017
+//
+//  'page_size' =>
+//  array (
+//    'required' => '0',
+//    'name' => 'page_size',
+//    'vname' => 'LBL_PAGE_SIZE',
+//    'type' => 'enum',
+//    'massupdate' => 0,
+//    'default' => '',
+//    'comments' => '',
+//    'help' => '',
+//    'importable' => 'true',
+//    'duplicate_merge' => 'disabled',
+//    'duplicate_merge_dom_value' => '0',
+//    'audited' => 0,
+//    'reportable' => 0,
+//    'len' => 100,
+//    'options' => 'pdf_page_size_dom',
+//    'studio' => 'visible',
+//  ),
+
+
+
+//  //Orientation 03/02/2017
+//
+//  'orientation' =>
+//  array (
+//     'required' => '0',
+//     'name' => 'orientation',
+//     'vname' => 'LBL_ORIENTATION',
+//     'type' => 'enum',
+//     'massupdate' => 0,
+//     'default' => '',
+//     'comments' => '',
+//     'help' => '',
+//     'importable' => 'true',
+//     'duplicate_merge' => 'disabled',
+//     'duplicate_merge_dom_value' => '0',
+//     'audited' => 0,
+//     'reportable' => 0,
+//     'len' => 100,
+//     'options' => 'pdf_orientation_dom',
+//     'studio' => 'visible',
+//  ),
+
+
+
 ),
 	'relationships'=>array (
 ),
