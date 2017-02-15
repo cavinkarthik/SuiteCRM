@@ -24,7 +24,11 @@
  *
  * @author Salesagility Ltd <support@salesagility.com>
  */
-include 'generatePdf.php';
+//<<<<<<< Updated upstream
+//=======
+////include 'generatePdf.php';
+//
+//>>>>>>> Stashed changes
 
 class templateParser
 {
