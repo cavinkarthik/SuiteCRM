@@ -774,15 +774,15 @@ footer.expandedSidebar {
     width: 79%;
     float: right;
 }
-/*footer.collapsedSidebar {*/
-    /*width: 94%;*/
-    /*float: right;*/
-/*}*/
+footer.collapsedSidebar {
+    width: 94%;
+    float: right;
+}
 
-/*.footer_left {*/
-    /*float: left;*/
-    /*width: 48%;*/
-/*}*/
+.footer_left {
+    float: left;
+    width: 48%;
+}
 
 a#powered_by {
     margin-left: 4%;
@@ -9879,7 +9879,7 @@ div.list-view-rounded-corners > table th:last-of-type {
 
         body {
             margin: 0mm;
-            font: 12pt Georgia, "Times New Roman", Times, serif;
+            font: 12pt Arial, Helvetica, sans-serif;
             line-height: 1.3;
         }
 
@@ -9897,16 +9897,6 @@ div.list-view-rounded-corners > table th:last-of-type {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
 
     /* TipTip CSS - Version 1.2 */
 
